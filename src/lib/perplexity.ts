@@ -5,7 +5,6 @@ interface PerplexityResponse {
     title: string;
     url: string;
     snippet: string;
-    reference: string; // Added field for the source or reference
   }>;
 }
 
@@ -18,6 +17,15 @@ const openai = new OpenAI({
   baseURL: "https://api.perplexity.ai",
 });
 
+function extractDomain(url: string): string {
+  try {
+    const domain = new URL(url).hostname;
+    return domain.replace(/^www\./, "");
+  } catch {
+    return "Unknown Source";
+  }
+}
+
 export async function searchResources(
   query: string
 ): Promise<PerplexityResponse> {
@@ -27,34 +35,74 @@ export async function searchResources(
       messages: [
         {
           role: "system",
-          content:
-            "You are a helpful assistant that provides learning resources. For the given topic, return a list of 5 high-quality learning resources with their titles, URLs, brief descriptions, and their source references.",
+          content: `You are an academic resource finder specializing in finding the highest quality educational content. 
+Focus on resources from:
+- Academic institutions (.edu domains)
+- Government sources (.gov domains)
+- Reputable organizations (.org domains)
+- Peer-reviewed publications
+- Official documentation
+- Established educational platforms
+
+For each resource, provide:
+1. Title: The official title of the resource
+2. URL: Direct link to the content
+3. Description: A concise summary highlighting the academic value
+
+Format each resource as:
+Title: [Resource Title]
+URL: [Resource URL]
+Description: [Academic value and content summary]
+
+Prioritize:
+- Primary sources over secondary sources
+- Peer-reviewed content
+- Official documentation
+- Academic publications
+- Educational institution resources`,
         },
         {
           role: "user",
-          content: `Find learning resources about: ${query}`,
+          content: `Find the 5 most academically rigorous and authoritative resources about: ${query}`,
         },
       ],
+      temperature: 0.3, // Lower temperature for more focused results
     });
 
-    // Check if the response content is valid
     const content = response.choices[0].message.content;
     if (!content) {
-      throw new Error("No content returned from the API");
+      throw new Error("No content received from Perplexity");
     }
 
-    // Parse the plain text response manually
-    const results = content
-      .split("\n")
-      .filter((line) => line.trim())
-      .map((line) => {
-        const [title, url, snippet, reference] = line
-          .split("|")
-          .map((part) => part.trim());
-        return { title, url, snippet, reference };
-      });
+    // Skip any introductory text and extract only the numbered list of resources
+    const resourceSection = content.split(/\d+\.\s+/).slice(1); // Skip the first item (preamble)
+    const results = resourceSection.map((resource) => {
+      const titleMatch = resource.match(/Title:\s*([^\n]+)/);
+      const urlMatch = resource.match(/URL:\s*([^\n]+)/);
+      const descriptionMatch = resource.match(/Description:\s*([^\n]+)/);
 
-    return { results };
+      let url = urlMatch?.[1]?.trim() || "#";
+      // Remove markdown formatting for URLs, e.g., [text](url) -> url
+      const urlRegex = /\[.*?\]\((.*?)\)/;
+      if (urlRegex.test(url)) {
+        url = url.replace(urlRegex, "$1");
+      }
+
+      // Remove any leading "**" that might appear before the URL
+      url = url.replace(/^\*\*/, "").trim();
+
+      const title = titleMatch?.[1]?.trim();
+
+      return {
+        title: title || extractDomain(url),
+        url,
+        snippet: descriptionMatch?.[1]?.trim() || "No description available",
+      };
+    });
+
+    return {
+      results: results.slice(0, 5), // Ensure we only return 5 results
+    };
   } catch (error) {
     console.error("Perplexity API error:", error);
     throw new Error("Failed to fetch learning resources");

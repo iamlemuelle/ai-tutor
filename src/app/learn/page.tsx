@@ -27,8 +27,6 @@ export default function LearnPage() {
     });
   };
 
-  console.log("API Response:", learningContent);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-16">
