@@ -1,7 +1,7 @@
-import OpenAI from 'openai';
+import OpenAI from "openai";
 
 if (!process.env.OPENAI_API_KEY) {
-  throw new Error('Missing OPENAI_API_KEY environment variable');
+  throw new Error("Missing OPENAI_API_KEY environment variable");
 }
 
 const openai = new OpenAI({
@@ -10,11 +10,12 @@ const openai = new OpenAI({
 
 export async function generateSummary(topic: string): Promise<string> {
   const response = await openai.chat.completions.create({
-    model: "gpt-4",
+    model: "gpt-3.5-turbo-1106",
     messages: [
       {
         role: "system",
-        content: "You are an expert tutor. Create a clear, concise summary of the following topic:",
+        content:
+          "You are an expert tutor. Create a clear, concise summary of the following topic:",
       },
       {
         role: "user",
@@ -34,7 +35,8 @@ export async function generateQuiz(topic: string): Promise<any> {
     messages: [
       {
         role: "system",
-        content: "Create a multiple-choice quiz with 5 questions about the following topic. Format the response as JSON with the following structure: { questions: [{ question: string, options: string[], correctAnswer: number }] }",
+        content:
+          "Create a multiple-choice quiz with 5 questions about the following topic. Format the response as JSON with the following structure: { questions: [{ question: string, options: string[], correctAnswer: number }] }",
       },
       {
         role: "user",
@@ -48,13 +50,17 @@ export async function generateQuiz(topic: string): Promise<any> {
   return JSON.parse(response.choices[0].message.content || "{}");
 }
 
-export async function getTutorResponse(question: string, context: string): Promise<string> {
+export async function getTutorResponse(
+  question: string,
+  context: string
+): Promise<string> {
   const response = await openai.chat.completions.create({
     model: "gpt-4",
     messages: [
       {
         role: "system",
-        content: "You are a helpful and knowledgeable tutor. Provide clear, detailed explanations.",
+        content:
+          "You are a helpful and knowledgeable tutor. Provide clear, detailed explanations.",
       },
       {
         role: "user",
