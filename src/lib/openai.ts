@@ -67,6 +67,56 @@ export async function generateQuiz(topic: string) {
   }
 }
 
+export async function generateFlashcards(
+  topic: string,
+  cardCount: number = 10
+) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo-1106",
+      messages: [
+        {
+          role: "system",
+          content: `You are a flashcard generator. Create ${cardCount} comprehensive flashcards that cover key concepts.`,
+        },
+        {
+          role: "user",
+          content: `Create ${cardCount} flashcards about ${topic}. Return only a JSON object with a 'flashcards' array. Each flashcard should have 'front' (question/term) and 'back' (answer/definition) properties.`,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 1000,
+      response_format: { type: "json_object" },
+    });
+
+    const content = response.choices[0].message.content;
+    if (!content) {
+      throw new Error("No content received from OpenAI");
+    }
+
+    const parsedFlashcards = JSON.parse(content);
+
+    if (
+      !parsedFlashcards.flashcards ||
+      !Array.isArray(parsedFlashcards.flashcards)
+    ) {
+      throw new Error("Invalid flashcards format received");
+    }
+
+    // Validate each flashcard has required properties
+    for (const card of parsedFlashcards.flashcards) {
+      if (!card.front || !card.back) {
+        throw new Error("Invalid flashcard format: missing front or back");
+      }
+    }
+
+    return parsedFlashcards;
+  } catch (error) {
+    console.error("Flashcard generation error:", error);
+    throw new Error("Failed to generate flashcards");
+  }
+}
+
 export async function getTutorResponse(
   question: string,
   context: string

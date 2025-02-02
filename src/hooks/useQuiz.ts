@@ -3,9 +3,13 @@ import { apiClient } from "@/lib/api";
 
 export function useQuiz(topic?: string) {
   const generateQuizMutation = useMutation({
-    mutationFn: async (variables: { topic: string }) => {
+    mutationFn: async (variables: { topic: string; questionCount: number }) => {
       const userId = "679f7cf3bb62ead7afc636f0"; // you need to provide the userId
-      return apiClient.quiz.generate(variables.topic, userId);
+      return apiClient.quiz.generate(
+        variables.topic,
+        variables.questionCount,
+        userId
+      );
     },
   });
   const submitQuizMutation = useMutation({
