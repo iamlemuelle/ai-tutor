@@ -1,9 +1,9 @@
-import axios from 'axios';
+import axios from "axios";
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: "/api",
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -31,23 +31,26 @@ export interface TutorResponse {
 export const apiClient = {
   learn: {
     getSummary: async (topic: string): Promise<LearningResponse> => {
-      const { data } = await api.post('/learn', { topic });
+      const { data } = await api.post("/learn", { topic });
       return data;
     },
   },
   quiz: {
-    generate: async (topic: string): Promise<QuizResponse> => {
-      const { data } = await api.post('/quiz', { topic });
+    generate: async (topic: string, userId: string): Promise<QuizResponse> => {
+      const { data } = await api.post("/quiz", { topic });
       return data;
     },
-    submit: async (quizId: string, answers: number[]): Promise<{ score: number }> => {
+    submit: async (
+      quizId: string,
+      answers: number[]
+    ): Promise<{ score: number }> => {
       const { data } = await api.post(`/quiz/${quizId}/submit`, { answers });
       return data;
     },
   },
   tutor: {
     ask: async (question: string): Promise<TutorResponse> => {
-      const { data } = await api.post('/tutor', { question });
+      const { data } = await api.post("/tutor", { question });
       return data;
     },
   },
