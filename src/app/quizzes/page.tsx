@@ -27,7 +27,7 @@ export default function QuizzesPage() {
     if (!topic.trim()) return;
     setQuizSubmitted(false);
     setSelectedAnswers([]);
-    generateQuiz(topic);
+    generateQuiz({ topic });
   };
 
   const handleAnswerSelect = (questionIndex: number, answerIndex: number) => {

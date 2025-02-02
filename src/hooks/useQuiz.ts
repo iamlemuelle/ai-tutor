@@ -1,11 +1,13 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api';
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api";
 
 export function useQuiz(topic?: string) {
   const generateQuizMutation = useMutation({
-    mutationFn: apiClient.quiz.generate,
+    mutationFn: async (variables: { topic: string }) => {
+      const userId = "679f7cf3bb62ead7afc636f0"; // you need to provide the userId
+      return apiClient.quiz.generate(variables.topic, userId);
+    },
   });
-
   const submitQuizMutation = useMutation({
     mutationFn: ({ quizId, answers }: { quizId: string; answers: number[] }) =>
       apiClient.quiz.submit(quizId, answers),

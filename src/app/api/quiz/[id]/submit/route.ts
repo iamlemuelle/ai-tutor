@@ -46,9 +46,12 @@ export async function POST(
     }
 
     // Calculate score
-    const correctAnswers = quiz.questions.reduce((count, question, index) => {
-      return count + (question.correctAnswer === answers[index] ? 1 : 0);
-    }, 0);
+    const correctAnswers = quiz.questions.reduce(
+      (count: any, question: any, index: any) => {
+        return count + (question.correctAnswer === answers[index] ? 1 : 0);
+      },
+      0
+    );
 
     const score = Math.round((correctAnswers / quiz.questions.length) * 100);
 
